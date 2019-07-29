@@ -13,6 +13,8 @@ function toHex(arr) {
 
 var MAX_PROGRAMMATIC = process.env.CI ? Infinity : 50;
 
+require('./init');
+
 describe('ed25519 derivations', function() {
   var expectedTests = 256;
   var ed25519;

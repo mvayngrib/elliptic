@@ -3,6 +3,8 @@ var elliptic = require('../');
 var utils = elliptic.utils;
 var hash = require('hash.js');
 
+require('./init');
+
 describe('Hmac_DRBG', function() {
   it('should support hmac-drbg-sha256', function() {
     function doDrbg(opt) {

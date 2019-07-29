@@ -11,6 +11,8 @@ var entropy = [
 
 var msg = 'deadbeef';
 
+require('./init');
+
 describe('ECDSA', function() {
   function test(name) {
     describe('curve ' + name, function() {

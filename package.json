@@ -13,7 +13,9 @@
     "jshint": "jscs benchmarks/*.js lib/*.js lib/**/*.js lib/**/**/*.js test/*.js",
     "lint": "npm run jscs && npm run jshint",
     "test": "npm run lint && npm run unit",
-    "unit": "istanbul test _mocha --reporter=spec test/*-test.js"
+    "unit": "npm run unit:base && npm run unit:precomputed",
+    "unit:base": "istanbul test _mocha --reporter=spec test/*-test.js",
+    "unit:precomputed": "USE_PRECOMPUTED=y istanbul test _mocha --reporter=spec test/*-test.js"
   },
   "repository": {
     "type": "git",
