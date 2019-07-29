@@ -1,3 +1,5 @@
+require('./init');
+
 var assert = require('assert');
 var elliptic = require('../');
 var Signature = require('../lib/elliptic/ec/signature')
@@ -10,8 +12,6 @@ var entropy = [
 ];
 
 var msg = 'deadbeef';
-
-require('./init');
 
 describe('ECDSA', function() {
   function test(name) {
