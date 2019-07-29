@@ -1,10 +1,10 @@
 'use strict';
 
+require('./init');
+
 var assert = require('assert');
 var BN = require('bn.js');
 var elliptic = require('../');
-
-require('./init');
 
 describe('Curve', function() {
   it('should work with example curve', function() {
