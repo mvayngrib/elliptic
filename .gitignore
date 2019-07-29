@@ -4,3 +4,4 @@ coverage/
 npm-debug.log
 1.js
 v8.log
+.vscode
