@@ -1,5 +1,5 @@
 {
-  "name": "elliptic",
+  "name": "@exodus/elliptic",
   "version": "6.4.1",
   "description": "EC cryptography",
   "main": "lib/elliptic.js",
