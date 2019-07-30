@@ -16,6 +16,7 @@ function usePrecomputed() {
     p224: require('../lib/elliptic/precomputed/p224'),
     p256: require('../lib/elliptic/precomputed/p256'),
     p384: require('../lib/elliptic/precomputed/p384'),
-    p521: require('../lib/elliptic/precomputed/p521')
+    p521: require('../lib/elliptic/precomputed/p521'),
+    ed25519: require('../lib/elliptic/precomputed/ed25519')
   });
 }
