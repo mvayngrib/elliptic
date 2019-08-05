@@ -37,6 +37,8 @@ describe('usePrecomputed', function() {
   });
 
   it('precomputed curves have been calculated correctly', function() {
+    this.timeout(5000);
+
     var dir = path.join(__dirname, '..', 'lib/elliptic/precomputed')
 
     fs.readdirSync(dir)
