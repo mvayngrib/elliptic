@@ -5,4 +5,5 @@ describe('Test specs', function () {
   require('./ecdsa-test.js');
   require('./ed25519-test.js');
   require('./use-precomputed-test.js');
+  require('./validate-preset-curves-test.js');
 });
