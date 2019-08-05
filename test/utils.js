@@ -1,5 +1,8 @@
 
-module.exports = { resetCache, usePrecomputed }
+module.exports = {
+  resetCache: resetCache,
+  usePrecomputed: usePrecomputed
+}
 
 function resetCache() {
   var cache = require.cache;
