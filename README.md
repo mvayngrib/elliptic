@@ -1,4 +1,4 @@
-# Elliptic [![Build Status](https://secure.travis-ci.org/indutny/elliptic.png)](http://travis-ci.org/indutny/elliptic) [![Coverage Status](https://coveralls.io/repos/indutny/elliptic/badge.svg?branch=master&service=github)](https://coveralls.io/github/indutny/elliptic?branch=master)
+# Elliptic [![Build Status](https://secure.travis-ci.org/ExodusMovement/elliptic.png)](http://travis-ci.org/ExodusMovement/elliptic) [![Coverage Status](https://coveralls.io/repos/ExodusMovement/elliptic/badge.svg?branch=master&service=github)](https://coveralls.io/githubExodusMovement/elliptic?branch=master)
 
 Fast elliptic-curve cryptography in a plain javascript implementation.
 
