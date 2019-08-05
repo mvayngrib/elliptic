@@ -51,7 +51,8 @@ describe('usePrecomputed', function() {
         var precomputed = require(path.join(dir, file));
         var curve = elliptic.ec(name);
         var computed = JSON.parse(JSON.stringify(curve.g.toJSON()));
-        assert.deepStrictEqual(
+        var compare = assert.deepStrictEqual || assert.deepEqual;
+        compare(
           computed,
           precomputed,
           name + ' curve matches precomputed'
