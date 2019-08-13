@@ -8,38 +8,42 @@ var utils = require('./utils');
 
 describe('usePrecomputed', function() {
   var elliptic;
-  var g;
+  var curve;
 
   function reset() {
     utils.resetCache();
     elliptic = require('../');
-    g = elliptic.curves.p256.g;
+    curve = elliptic.curves.p256;
   }
 
   beforeEach(reset);
 
   it('should set g.precomputed on regular curve init', function() {
-    assert(g.precomputed == null, 'g.precomputed starts out null');
+    assert(curve.g.precomputed == null, 'g.precomputed starts out null');
 
     elliptic.ec('p256');
 
-    assert(g.precomputed != null, 'curve init sets g.precomputed');
+    assert(curve.g.precomputed != null, 'curve init sets g.precomputed');
   });
 
   it('should set g.precomputed via usePrecomputed', function() {
-    assert(g.precomputed == null, 'g.precomputed stars out null');
+    assert(curve.g.precomputed == null, 'g.precomputed stars out null');
 
     elliptic.usePrecomputed({
       p256: require('../lib/elliptic/precomputed/p256')
     });
 
-    assert(g.precomputed != null, 'usePrecomputed sets g.precomputed');
+    assert(curve.g.precomputed != null, 'usePrecomputed sets g.precomputed');
   });
 
   it('precomputed curves have been calculated correctly', function() {
     this.timeout(5000);
 
     var dir = path.join(__dirname, '..', 'lib/elliptic/precomputed')
+
+    function exportPoint(p) {
+      return JSON.parse(JSON.stringify(p.toJSON()));
+    }
 
     fs.readdirSync(dir)
       .filter(function (file) {
@@ -50,7 +54,7 @@ describe('usePrecomputed', function() {
         console.log('comparing', name)
         var precomputed = require(path.join(dir, file));
         var curve = elliptic.ec(name);
-        var computed = JSON.parse(JSON.stringify(curve.g.toJSON()));
+        var computed = exportPoint(curve.g);
         var compare = assert.deepStrictEqual || assert.deepEqual;
         compare(
           computed,
