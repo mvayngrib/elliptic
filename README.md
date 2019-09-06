@@ -1,6 +1,6 @@
-# Elliptic [![Build Status](https://secure.travis-ci.org/indutny/elliptic.png)](http://travis-ci.org/indutny/elliptic) [![Coverage Status](https://coveralls.io/repos/indutny/elliptic/badge.svg?branch=master&service=github)](https://coveralls.io/github/indutny/elliptic?branch=master) [![Code Climate](https://codeclimate.com/github/indutny/elliptic/badges/gpa.svg)](https://codeclimate.com/github/indutny/elliptic)
+# Elliptic [![Build Status](https://secure.travis-ci.org/ExodusMovement/elliptic.png)](http://travis-ci.org/ExodusMovement/elliptic) [![Coverage Status](https://coveralls.io/repos/ExodusMovement/elliptic/badge.svg?branch=master&service=github)](https://coveralls.io/githubExodusMovement/elliptic?branch=master) [![Code Climate](https://codeclimate.com/github/ExodusMovement/elliptic/badges/gpa.svg)](https://codeclimate.com/github/ExodusMovement/elliptic)
 
-[![Saucelabs Test Status](https://saucelabs.com/browser-matrix/gh-indutny-elliptic.svg)](https://saucelabs.com/u/gh-indutny-elliptic)
+[![Saucelabs Test Status](https://saucelabs.com/browser-matrix/gh-ExodusMovement-elliptic.svg)](https://saucelabs.com/u/gh-ExodusMovement-elliptic)
 
 Fast elliptic-curve cryptography in a plain javascript implementation.
 

@@ -1,6 +1,8 @@
 /* eslint-env node, mocha */
 'use strict';
 
+require('./init');
+
 var assert = require('assert');
 var elliptic = require('../');
 var Signature = require('../lib/elliptic/ec/signature');
