@@ -30,9 +30,11 @@
     "uglify-js": "^2.4.13"
   },
   "dependencies": {
-    "bn.js": "2.0.4",
     "brorand": "1.1.0",
     "hash.js": "1.1.5",
     "inherits": "2.0.1"
+  },
+  "peerDependencies": {
+    "bn.js": "2.0.4"
   }
 }
