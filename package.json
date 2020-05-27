@@ -1,6 +1,6 @@
 {
   "name": "@exodus/elliptic",
-  "version": "3.0.3-dcr.0",
+  "version": "3.0.3-dcr.1",
   "description": "EC cryptography",
   "main": "lib/elliptic.js",
   "scripts": {
