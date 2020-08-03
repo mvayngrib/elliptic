@@ -27,7 +27,8 @@
     "jscs": "^1.11.3",
     "jshint": "^2.6.0",
     "mocha": "^2.1.0",
-    "uglify-js": "^2.4.13"
+    "uglify-js": "^2.4.13",
+    "bn.js": "2.0.4"
   },
   "dependencies": {
     "brorand": "1.1.0",
