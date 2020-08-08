@@ -1,7 +1,7 @@
-var utils = require('./utils')
+var utils = require('./utils');
 
-utils.resetCache()
+utils.resetCache();
 
 if (process.env.USE_PRECOMPUTED === 'y') {
-  utils.usePrecomputed()
+  utils.usePrecomputed();
 }

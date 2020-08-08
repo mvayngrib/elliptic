@@ -1,8 +1,8 @@
 
 module.exports = {
   resetCache: resetCache,
-  usePrecomputed: usePrecomputed
-}
+  usePrecomputed: usePrecomputed,
+};
 
 function resetCache() {
   var cache = require.cache;
@@ -12,13 +12,13 @@ function resetCache() {
 }
 
 function usePrecomputed() {
-  console.log('USING PRECOMPUTED CURVES')
+  console.log('USING PRECOMPUTED CURVES');
   const elliptic = require('..');
   elliptic.usePrecomputed({
     p192: require('../lib/elliptic/precomputed/p192'),
     p224: require('../lib/elliptic/precomputed/p224'),
     p256: require('../lib/elliptic/precomputed/p256'),
     p384: require('../lib/elliptic/precomputed/p384'),
-    p521: require('../lib/elliptic/precomputed/p521')
+    p521: require('../lib/elliptic/precomputed/p521'),
   });
 }

@@ -1,8 +1,6 @@
 /* eslint-env node, mocha */
 'use strict';
 
-var fs = require('fs');
-var path = require('path');
 var assert = require('assert');
 var elliptic = require('../lib/elliptic');
 var curves = elliptic.curves;
@@ -26,4 +24,4 @@ describe('toJSON <-> pointFromJSON symmetry', function() {
       compare(exported, reexported, 'toJSON is the inverse of pointFromJSON');
     }
   });
-})
+});
