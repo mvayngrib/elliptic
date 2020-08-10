@@ -1,6 +1,6 @@
 {
   "name": "@exodus/elliptic",
-  "version": "6.4.1-precomputed",
+  "version": "6.4.1-precomputed.1",
   "description": "EC cryptography",
   "main": "lib/elliptic.js",
   "files": [
