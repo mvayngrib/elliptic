@@ -7,8 +7,6 @@
     "lib"
   ],
   "scripts": {
-    "jscs": "jscs benchmarks/*.js lib/*.js lib/**/*.js lib/**/**/*.js test/index.js",
-    "jshint": "jscs benchmarks/*.js lib/*.js lib/**/*.js lib/**/**/*.js test/index.js",
     "lint": "eslint lib test",
     "lint:fix": "npm run lint -- --fix",
     "unit": "npm run unit:base && npm run unit:precomputed",
