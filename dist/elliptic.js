@@ -13,7 +13,10 @@ elliptic.curves = require('./elliptic/curves');
 elliptic.ec = require('./elliptic/ec');
 elliptic.eddsa = require('./elliptic/eddsa');
 
-},{"../package.json":35,"./elliptic/curve":4,"./elliptic/curves":7,"./elliptic/ec":8,"./elliptic/eddsa":11,"./elliptic/utils":15,"brorand":17}],2:[function(require,module,exports){
+// Performance
+elliptic.usePrecomputed = require('./elliptic/use-precomputed');
+
+},{"../package.json":36,"./elliptic/curve":4,"./elliptic/curves":7,"./elliptic/ec":8,"./elliptic/eddsa":11,"./elliptic/use-precomputed":15,"./elliptic/utils":16,"brorand":18}],2:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -396,7 +399,7 @@ BasePoint.prototype.dblp = function dblp(k) {
   return r;
 };
 
-},{"../utils":15,"bn.js":16}],3:[function(require,module,exports){
+},{"../utils":16,"bn.js":17}],3:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -833,7 +836,7 @@ Point.prototype.eqXToP = function eqXToP(x) {
 Point.prototype.toP = Point.prototype.normalize;
 Point.prototype.mixedAdd = Point.prototype.add;
 
-},{"../utils":15,"./base":2,"bn.js":16,"inherits":32}],4:[function(require,module,exports){
+},{"../utils":16,"./base":2,"bn.js":17,"inherits":33}],4:[function(require,module,exports){
 'use strict';
 
 var curve = exports;
@@ -1023,7 +1026,7 @@ Point.prototype.getX = function getX() {
   return this.x.fromRed();
 };
 
-},{"../utils":15,"./base":2,"bn.js":16,"inherits":32}],6:[function(require,module,exports){
+},{"../utils":16,"./base":2,"bn.js":17,"inherits":33}],6:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -1337,9 +1340,9 @@ Point.prototype._getBeta = function _getBeta() {
 
 Point.prototype.toJSON = function toJSON() {
   if (!this.precomputed)
-    return [ this.x, this.y ];
+    return [ this.x.fromRed(), this.y.fromRed() ];
 
-  return [ this.x, this.y, this.precomputed && {
+  return [ this.x.fromRed(), this.y.fromRed(), this.precomputed && {
     doubles: this.precomputed.doubles && {
       step: this.precomputed.doubles.step,
       points: this.precomputed.doubles.points.slice(1),
@@ -1963,7 +1966,7 @@ JPoint.prototype.isInfinity = function isInfinity() {
   return this.z.cmpn(0) === 0;
 };
 
-},{"../utils":15,"./base":2,"bn.js":16,"inherits":32}],7:[function(require,module,exports){
+},{"../utils":16,"./base":2,"bn.js":17,"inherits":33}],7:[function(require,module,exports){
 'use strict';
 
 var curves = exports;
@@ -1985,9 +1988,16 @@ function PresetCurve(options) {
   this.n = this.curve.n;
   this.hash = options.hash;
 
+  if (!options.skipValidation) {
+    this.validate();
+  }
+}
+
+PresetCurve.prototype.validate = function () {
   assert(this.g.validate(), 'Invalid curve');
   assert(this.g.mul(this.n).isInfinity(), 'Invalid curve, G*N != O');
-}
+};
+
 curves.PresetCurve = PresetCurve;
 
 function defineCurve(name, options) {
@@ -1995,6 +2005,8 @@ function defineCurve(name, options) {
     configurable: true,
     enumerable: true,
     get: function() {
+      // ok to mutate, this getter is only used internally
+      options.skipValidation = true;
       var curve = new PresetCurve(options);
       Object.defineProperty(curves, name, {
         configurable: true,
@@ -2171,7 +2183,7 @@ defineCurve('secp256k1', {
   ],
 });
 
-},{"./curve":4,"./precomputed/secp256k1":14,"./utils":15,"hash.js":19}],8:[function(require,module,exports){
+},{"./curve":4,"./precomputed/secp256k1":14,"./utils":16,"hash.js":20}],8:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -2416,7 +2428,7 @@ EC.prototype.getKeyRecoveryParam = function(e, signature, Q, enc) {
   throw new Error('Unable to find valid recovery factor');
 };
 
-},{"../curves":7,"../utils":15,"./key":9,"./signature":10,"bn.js":16,"brorand":17,"hmac-drbg":31}],9:[function(require,module,exports){
+},{"../curves":7,"../utils":16,"./key":9,"./signature":10,"bn.js":17,"brorand":18,"hmac-drbg":32}],9:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -2539,7 +2551,7 @@ KeyPair.prototype.inspect = function inspect() {
          ' pub: ' + (this.pub && this.pub.inspect()) + ' >';
 };
 
-},{"../utils":15,"bn.js":16}],10:[function(require,module,exports){
+},{"../utils":16,"bn.js":17}],10:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -2707,7 +2719,7 @@ Signature.prototype.toDER = function toDER(enc) {
   return utils.encode(res, enc);
 };
 
-},{"../utils":15,"bn.js":16}],11:[function(require,module,exports){
+},{"../utils":16,"bn.js":17}],11:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -2827,7 +2839,7 @@ EDDSA.prototype.isPoint = function isPoint(val) {
   return val instanceof this.pointClass;
 };
 
-},{"../curves":7,"../utils":15,"./key":12,"./signature":13,"hash.js":19}],12:[function(require,module,exports){
+},{"../curves":7,"../utils":16,"./key":12,"./signature":13,"hash.js":20}],12:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -2924,7 +2936,7 @@ KeyPair.prototype.getPublic = function getPublic(enc) {
 
 module.exports = KeyPair;
 
-},{"../utils":15}],13:[function(require,module,exports){
+},{"../utils":16}],13:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -2991,7 +3003,7 @@ Signature.prototype.toHex = function toHex() {
 
 module.exports = Signature;
 
-},{"../utils":15,"bn.js":16}],14:[function(require,module,exports){
+},{"../utils":16,"bn.js":17}],14:[function(require,module,exports){
 module.exports = {
   doubles: {
     step: 4,
@@ -3774,6 +3786,31 @@ module.exports = {
 };
 
 },{}],15:[function(require,module,exports){
+var curves = require('./curves');
+
+function usePrecomputed(precomputed) {
+  // validate input
+  var names = Object.keys(precomputed);
+  var invalid = names.filter(function(name) {
+    if (!/^[a-z][a-z0-9]+$/i.test(name)) return true;
+    return ({})[name] || !curves[name];
+  });
+
+  if (invalid.length) {
+    throw new Error('invalid curves: ' + invalid.join(','));
+  }
+
+  // monkeypatch
+  names.forEach(function(name) {
+    if (!curves[name].g.precomputed) {
+      curves[name].g = curves[name].curve.pointFromJSON(precomputed[name]);
+    }
+  });
+}
+
+module.exports = usePrecomputed;
+
+},{"./curves":7}],16:[function(require,module,exports){
 'use strict';
 
 var utils = exports;
@@ -3894,7 +3931,7 @@ function intFromLE(bytes) {
 utils.intFromLE = intFromLE;
 
 
-},{"bn.js":16,"minimalistic-assert":33,"minimalistic-crypto-utils":34}],16:[function(require,module,exports){
+},{"bn.js":17,"minimalistic-assert":34,"minimalistic-crypto-utils":35}],17:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -7329,7 +7366,7 @@ utils.intFromLE = intFromLE;
   };
 })(typeof module === 'undefined' || module, this);
 
-},{"buffer":18}],17:[function(require,module,exports){
+},{"buffer":19}],18:[function(require,module,exports){
 var r;
 
 module.exports = function rand(len) {
@@ -7396,9 +7433,9 @@ if (typeof self === 'object') {
   }
 }
 
-},{"crypto":18}],18:[function(require,module,exports){
+},{"crypto":19}],19:[function(require,module,exports){
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 var hash = exports;
 
 hash.utils = require('./hash/utils');
@@ -7415,7 +7452,7 @@ hash.sha384 = hash.sha.sha384;
 hash.sha512 = hash.sha.sha512;
 hash.ripemd160 = hash.ripemd.ripemd160;
 
-},{"./hash/common":20,"./hash/hmac":21,"./hash/ripemd":22,"./hash/sha":23,"./hash/utils":30}],20:[function(require,module,exports){
+},{"./hash/common":21,"./hash/hmac":22,"./hash/ripemd":23,"./hash/sha":24,"./hash/utils":31}],21:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -7509,7 +7546,7 @@ BlockHash.prototype._pad = function pad() {
   return res;
 };
 
-},{"./utils":30,"minimalistic-assert":33}],21:[function(require,module,exports){
+},{"./utils":31,"minimalistic-assert":34}],22:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -7558,7 +7595,7 @@ Hmac.prototype.digest = function digest(enc) {
   return this.outer.digest(enc);
 };
 
-},{"./utils":30,"minimalistic-assert":33}],22:[function(require,module,exports){
+},{"./utils":31,"minimalistic-assert":34}],23:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -7706,7 +7743,7 @@ var sh = [
   8, 5, 12, 9, 12, 5, 14, 6, 8, 13, 6, 5, 15, 13, 11, 11
 ];
 
-},{"./common":20,"./utils":30}],23:[function(require,module,exports){
+},{"./common":21,"./utils":31}],24:[function(require,module,exports){
 'use strict';
 
 exports.sha1 = require('./sha/1');
@@ -7715,7 +7752,7 @@ exports.sha256 = require('./sha/256');
 exports.sha384 = require('./sha/384');
 exports.sha512 = require('./sha/512');
 
-},{"./sha/1":24,"./sha/224":25,"./sha/256":26,"./sha/384":27,"./sha/512":28}],24:[function(require,module,exports){
+},{"./sha/1":25,"./sha/224":26,"./sha/256":27,"./sha/384":28,"./sha/512":29}],25:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -7791,7 +7828,7 @@ SHA1.prototype._digest = function digest(enc) {
     return utils.split32(this.h, 'big');
 };
 
-},{"../common":20,"../utils":30,"./common":29}],25:[function(require,module,exports){
+},{"../common":21,"../utils":31,"./common":30}],26:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -7823,7 +7860,7 @@ SHA224.prototype._digest = function digest(enc) {
 };
 
 
-},{"../utils":30,"./256":26}],26:[function(require,module,exports){
+},{"../utils":31,"./256":27}],27:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -7930,7 +7967,7 @@ SHA256.prototype._digest = function digest(enc) {
     return utils.split32(this.h, 'big');
 };
 
-},{"../common":20,"../utils":30,"./common":29,"minimalistic-assert":33}],27:[function(require,module,exports){
+},{"../common":21,"../utils":31,"./common":30,"minimalistic-assert":34}],28:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -7967,7 +8004,7 @@ SHA384.prototype._digest = function digest(enc) {
     return utils.split32(this.h.slice(0, 12), 'big');
 };
 
-},{"../utils":30,"./512":28}],28:[function(require,module,exports){
+},{"../utils":31,"./512":29}],29:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -8299,7 +8336,7 @@ function g1_512_lo(xh, xl) {
   return r;
 }
 
-},{"../common":20,"../utils":30,"minimalistic-assert":33}],29:[function(require,module,exports){
+},{"../common":21,"../utils":31,"minimalistic-assert":34}],30:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -8350,7 +8387,7 @@ function g1_256(x) {
 }
 exports.g1_256 = g1_256;
 
-},{"../utils":30}],30:[function(require,module,exports){
+},{"../utils":31}],31:[function(require,module,exports){
 'use strict';
 
 var assert = require('minimalistic-assert');
@@ -8630,7 +8667,7 @@ function shr64_lo(ah, al, num) {
 }
 exports.shr64_lo = shr64_lo;
 
-},{"inherits":32,"minimalistic-assert":33}],31:[function(require,module,exports){
+},{"inherits":33,"minimalistic-assert":34}],32:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -8745,7 +8782,7 @@ HmacDRBG.prototype.generate = function generate(len, enc, add, addEnc) {
   return utils.encode(res, enc);
 };
 
-},{"hash.js":19,"minimalistic-assert":33,"minimalistic-crypto-utils":34}],32:[function(require,module,exports){
+},{"hash.js":20,"minimalistic-assert":34,"minimalistic-crypto-utils":35}],33:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -8774,7 +8811,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 module.exports = assert;
 
 function assert(val, msg) {
@@ -8787,7 +8824,7 @@ assert.equal = function assertEqual(l, r, msg) {
     throw new Error(msg || ('Assertion failed: ' + l + ' != ' + r));
 };
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 'use strict';
 
 var utils = exports;
@@ -8847,10 +8884,10 @@ utils.encode = function encode(arr, enc) {
     return arr;
 };
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 module.exports={
-  "name": "elliptic",
-  "version": "6.5.4",
+  "name": "@exodus/elliptic",
+  "version": "6.5.4-precomputed",
   "description": "EC cryptography",
   "main": "lib/elliptic.js",
   "files": [
@@ -8859,7 +8896,9 @@ module.exports={
   "scripts": {
     "lint": "eslint lib test",
     "lint:fix": "npm run lint -- --fix",
-    "unit": "istanbul test _mocha --reporter=spec test/index.js",
+    "unit": "npm run unit:base && npm run unit:precomputed",
+    "unit:base": "istanbul test _mocha --reporter=spec test/index.js",
+    "unit:precomputed": "USE_PRECOMPUTED=y istanbul test _mocha --reporter=spec test/index.js",
     "test": "npm run lint && npm run unit",
     "version": "grunt dist && git add dist/"
   },
