@@ -2264,8 +2264,27 @@ EC.prototype.genKeyPair = function genKeyPair(options) {
   }
 };
 
-EC.prototype._truncateToN = function _truncateToN(msg, truncOnly) {
-  var delta = msg.byteLength() * 8 - this.n.bitLength();
+EC.prototype._truncateToN = function _truncateToN(msg, truncOnly, bitLength) {
+  var byteLength;
+  if (BN.isBN(msg) || typeof msg === 'number') {
+    msg = new BN(msg, 16);
+    byteLength = msg.byteLength();
+  } else if (typeof msg === 'object') {
+    // BN assumes an array-like input and asserts length
+    byteLength = msg.length;
+    msg = new BN(msg, 16);
+  } else {
+    // BN converts the value to string
+    var str = msg.toString();
+    // HEX encoding
+    byteLength = (str.length + 1) >>> 1;
+    msg = new BN(str, 16);
+  }
+  // Allow overriding
+  if (typeof bitLength !== 'number') {
+    bitLength = byteLength * 8;
+  }
+  var delta = bitLength - this.n.bitLength();
   if (delta > 0)
     msg = msg.ushrn(delta);
   if (!truncOnly && msg.cmp(this.n) >= 0)
@@ -2282,8 +2301,18 @@ EC.prototype.sign = function sign(msg, key, enc, options) {
   if (!options)
     options = {};
 
+  if (typeof msg !== 'string' && typeof msg !== 'number' && !BN.isBN(msg)) {
+    assert(typeof msg === 'object' && msg && typeof msg.length === 'number',
+      'Expected message to be an array-like, a hex string, or a BN instance');
+    assert((msg.length >>> 0) === msg.length); // non-negative 32-bit integer
+    for (var i = 0; i < msg.length; i++) assert((msg[i] & 255) === msg[i]);
+  }
+
   key = this.keyFromPrivate(key, enc);
-  msg = this._truncateToN(new BN(msg, 16));
+  msg = this._truncateToN(msg, false, options.msgBitLength);
+
+  // Would fail further checks, but let's make the error message clear
+  assert(!msg.isNeg(), 'Can not sign a negative message');
 
   // Zero-extend key to provide enough entropy
   var bytes = this.n.byteLength();
@@ -2291,6 +2320,9 @@ EC.prototype.sign = function sign(msg, key, enc, options) {
 
   // Zero-extend nonce to have the same byte size as N
   var nonce = msg.toArray('be', bytes);
+
+  // Recheck nonce to be bijective to msg
+  assert((new BN(nonce)).eq(msg), 'Can not sign message');
 
   // Instantiate Hmac_DRBG
   var drbg = new HmacDRBG({
@@ -2339,8 +2371,11 @@ EC.prototype.sign = function sign(msg, key, enc, options) {
   }
 };
 
-EC.prototype.verify = function verify(msg, signature, key, enc) {
-  msg = this._truncateToN(new BN(msg, 16));
+EC.prototype.verify = function verify(msg, signature, key, enc, options) {
+  if (!options)
+    options = {};
+
+  msg = this._truncateToN(msg, false, options.msgBitLength);
   key = this.keyFromPublic(key, enc);
   signature = new Signature(signature, 'hex');
 
@@ -2542,8 +2577,8 @@ KeyPair.prototype.sign = function sign(msg, enc, options) {
   return this.ec.sign(msg, this, enc, options);
 };
 
-KeyPair.prototype.verify = function verify(msg, signature) {
-  return this.ec.verify(msg, signature, this);
+KeyPair.prototype.verify = function verify(msg, signature, options) {
+  return this.ec.verify(msg, signature, this, undefined, options);
 };
 
 KeyPair.prototype.inspect = function inspect() {
@@ -2589,6 +2624,10 @@ function getLength(buf, p) {
 
   // Indefinite length or overflow
   if (octetLen === 0 || octetLen > 4) {
+    return false;
+  }
+
+  if(buf[p.place] === 0x00) {
     return false;
   }
 
@@ -2640,6 +2679,9 @@ Signature.prototype._importDER = function _importDER(data, enc) {
   if (rlen === false) {
     return false;
   }
+  if ((data[p.place] & 128) !== 0) {
+    return false;
+  }
   var r = data.slice(p.place, rlen + p.place);
   p.place += rlen;
   if (data[p.place++] !== 0x02) {
@@ -2650,6 +2692,9 @@ Signature.prototype._importDER = function _importDER(data, enc) {
     return false;
   }
   if (data.length !== slen + p.place) {
+    return false;
+  }
+  if ((data[p.place] & 128) !== 0) {
     return false;
   }
   var s = data.slice(p.place, slen + p.place);
@@ -2774,6 +2819,9 @@ EDDSA.prototype.sign = function sign(message, secret) {
 EDDSA.prototype.verify = function verify(message, sig, pub) {
   message = parseBytes(message);
   sig = this.makeSignature(sig);
+  if (sig.S().gte(sig.eddsa.curve.n) || sig.S().isNeg()) {
+    return false;
+  }
   var key = this.keyFromPublic(pub);
   var h = this.hashInt(sig.Rencoded(), key.pubBytes(), message);
   var SG = this.g.mul(sig.S());
@@ -2960,6 +3008,7 @@ function Signature(eddsa, sig) {
     sig = parseBytes(sig);
 
   if (Array.isArray(sig)) {
+    assert(sig.length === eddsa.encodingLength * 2, 'Signature has invalid size');
     sig = {
       R: sig.slice(0, eddsa.encodingLength),
       S: sig.slice(eddsa.encodingLength),
@@ -3827,12 +3876,15 @@ utils.encode = minUtils.encode;
 // Represent num in a w-NAF form
 function getNAF(num, w, bits) {
   var naf = new Array(Math.max(num.bitLength(), bits) + 1);
-  naf.fill(0);
+  var i;
+  for (i = 0; i < naf.length; i += 1) {
+    naf[i] = 0;
+  }
 
   var ws = 1 << (w + 1);
   var k = num.clone();
 
-  for (var i = 0; i < naf.length; i++) {
+  for (i = 0; i < naf.length; i++) {
     var z;
     var mod = k.andln(ws - 1);
     if (k.isOdd()) {
@@ -8887,7 +8939,7 @@ utils.encode = function encode(arr, enc) {
 },{}],36:[function(require,module,exports){
 module.exports={
   "name": "@exodus/elliptic",
-  "version": "6.5.4-precomputed",
+  "version": "6.6.1-precomputed",
   "description": "EC cryptography",
   "main": "lib/elliptic.js",
   "files": [
